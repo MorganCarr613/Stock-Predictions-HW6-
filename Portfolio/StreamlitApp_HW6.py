@@ -63,8 +63,8 @@ MODEL_INFO = {
         "endpoint": aws_endpoint,
         "explainer": 'explainer_sentiment.shap',
         "pipeline": 'finalized_sentiment_model.tar.gz',
-        "keys": ['ADBE','MSFT','JPM','sentiment_textblob'],
-        "inputs": [{"name": k, "type": "number", "min": -1.0, "max": 1.0, "default": 0.0, "step": 0.01} for k in ['ADBE','MSFT','JPM','sentiment_textblob']]
+        "keys": ['TSLA','AMZN','WMT','sentiment_textblob', 'sentiment_change', 'sentiment_lag1'],     # make sure keys are what are in your pipeline
+        "inputs": [{"name": k, "type": "number", "min": -1.0, "max": 1.0, "default": 0.0, "step": 0.01} for k in ['TSLA','AMZN','WMT','sentiment_textblob]]
 }
 
 def load_pipeline(_session, bucket, key):
@@ -107,14 +107,14 @@ def call_model_api(input_df):
 
     try:
         # For regression
-        # raw_pred = predictor.predict(input_df)
-        # pred_val = pd.DataFrame(raw_pred).values[-1][0]
-        # return round(float(pred_val), 4), 200
-        # For classification
         raw_pred = predictor.predict(input_df)
         pred_val = pd.DataFrame(raw_pred).values[-1][0]
-        mapping = {-1: "SELL", 0: "HOLD", 1: "BUY"}
-        return mapping.get(pred_val), 200
+        return round(float(pred_val), 4), 200
+        # For classification
+        # raw_pred = predictor.predict(input_df)
+        # pred_val = pd.DataFrame(raw_pred).values[-1][0]
+        # mapping = {-1: "SELL", 0: "HOLD", 1: "BUY"}
+        # return mapping.get(pred_val), 200
     except Exception as e:
         return f"Error: {str(e)}", 500
 
@@ -132,12 +132,14 @@ def display_explanation(input_df, session, aws_bucket):
     
     st.subheader("🔍 Decision Transparency (SHAP)")
     fig, ax = plt.subplots(figsize=(10, 4))
-    #shap.plots.waterfall(shap_values[0], max_display=10)
-    shap.plots.waterfall(shap_values[0, :, 0])
+    shap.plots.waterfall(shap_values[0], max_display=10)  # Regression
+    # shap.plots.waterfall(shap_values[0, :, 0])  # Classifiaction
     st.pyplot(fig)
     # top feature 
-    # top_feature = pd.Series(shap_values[0].values, index=shap_values[0].feature_names).abs().idxmax()
-    top_feature = pd.Series(shap_values[0, :, 0].values, index=shap_values[0, :, 0].feature_names).abs().idxmax()
+    # Regression
+    top_feature = pd.Series(shap_values[0].values, index=shap_values[0].feature_names).abs().idxmax()
+    # Classifiaction 
+    # top_feature = pd.Series(shap_values[0, :, 0].values, index=shap_values[0, :, 0].feature_names).abs().idxmax()
     st.info(f"**Business Insight:** The most influential factor in this decision was **{top_feature}**.")
 
 
@@ -173,6 +175,7 @@ if submitted:
         display_explanation(input_df,session, aws_bucket)
     else:
         st.error(res)
+
 
 
 
