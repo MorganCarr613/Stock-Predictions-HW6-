@@ -63,8 +63,8 @@ MODEL_INFO = {
         "endpoint": aws_endpoint,
         "explainer": 'explainer_sentiment.shap',
         "pipeline": 'finalized_sentiment_model.tar.gz',
-        "keys": ['TSLA','AMZN','WMT','sentiment_textblob', 'sentiment_change', 'sentiment_lag1'],     # make sure keys are what are in your pipeline
-        "inputs": [{"name": k, "type": "number", "min": -1.0, "max": 1.0, "default": 0.0, "step": 0.01} for k in ['TSLA','AMZN','WMT','sentiment_textblob', 'sentiment_change', 'sentiment_lag1']]
+        "keys": ['AAPL','MSFT','sentiment_lex', 'WMT', 'sentiment_lag1'],     # make sure keys are what are in your pipeline
+        "inputs": [{"name": k, "type": "number", "min": -1.0, "max": 1.0, "default": 0.0, "step": 0.01} for k in ['AAPL','MSFT','sentiment_lex', 'WMT', 'sentiment_lag1']]
 }
 
 def load_pipeline(_session, bucket, key):
